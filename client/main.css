@@ -1,0 +1,46 @@
+body {
+  padding: 0;
+  margin: 0;
+  font-family: 'Open Sans', sans-serif;
+}
+
+body::-webkit-scrollbar {
+  width: 0 !important;
+}
+
+ul, li {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+button {
+ padding: 5px;
+ background: #444;
+ color: #fff;
+ border: 1px solid #fff;
+ margin-right: 50px;
+}
+
+#bar {
+  background: #777;
+  opacity: .6;
+  width: 100%;
+  height: 50px;
+  position: fixed;
+  left: 0;
+  top: 0;
+}
+
+div.page {
+  margin-top: 150px;
+  padding: 20px;
+  width: 80%;
+  min-height: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  background: #ddd;
+  border: 1px solid #aaa;
+  border-radius: 5px;
+  box-shadow: 0 0 10px #666;
+}
