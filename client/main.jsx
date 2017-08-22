@@ -4,68 +4,95 @@ import { mount } from 'react-mounter';
 import { Meteor } from 'meteor/meteor';
 import { FlowRouter } from 'meteor/kadira:flow-router';
 import { Tiles } from '../imports/db.js';
+import { ZPT } from '../imports/db.js';
 
 function D3(data) {
-  console.log(data);
+  console.log('x=',data.x);
+  console.log('y=',data.y);
 
-  // Set the dimensions of the canvas / graph
-  var margin = {top: 30, right: 20, bottom: 30, left: 50},
-      width = 600 - margin.left - margin.right,
-      height = 270 - margin.top - margin.bottom;
+  var test_data = [[5,3], [10,17], [15,4], [2,8]];
+  console.log('test_data[0]',test_data[0]);
+  console.log('test_data[1]',test_data[1]);
+  var xdom= [0, d3.max(test_data, function(d) { return d[0]; })]
+  console.log('xdom',xdom);
 
-  // Set the ranges
-  var x = d3.time.scale().range([0, width]);
-  var y = d3.scale.linear().range([height, 0]);
+  var margin = {top: 20, right: 15, bottom: 60, left: 60}
+    , width = 960 - margin.left - margin.right
+    , height = 500 - margin.top - margin.bottom;
 
-  // Define the axes
-  var xAxis = d3.svg.axis().scale(x)
-    .orient("bottom").ticks(5);
+  var x = d3.scale.linear()
+    .domain([0, d3.max(data, function(d) { return d.x; })])
+    .range([ 0, width ]);
 
-  var yAxis = d3.svg.axis().scale(y)
-    .orient("left").ticks(5);
+  var y = d3.scale.linear()
+    .domain([0, d3.max(data, function(d) { return d.y; })])
+    .range([ height, 0 ]);
 
-  // Define the line
-  var valueline = d3.svg.line()
-    .x(function(d) { return x(d.x); })
-    .y(function(d) { return y(d.y); });
+  var chart = d3.select('#page-1')
+    .append('svg:svg')
+    .attr('width', width + margin.right + margin.left)
+    .attr('height', height + margin.top + margin.bottom)
+    .attr('class', 'chart')
 
-  // Adds the svg canvas
-  var svg = d3.select("#page-1")
-    .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", 
-        "translate(" + margin.left + "," + margin.top + ")");
+  var main = chart.append('g')
+    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('class', 'main')   
+  
+  // draw the x axis
+  var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient('bottom');
 
-  // Scale the range of the data
-  x.domain(d3.extent(data, function(d) { return d.x; }));
-  y.domain([0, d3.max(data, function(d) { return d.y; })]);
-
-  // Add the valueline path.
-  svg.append("path")
-  .attr("class", "line")
-  .attr("d", valueline(data));
-
-  // Add the scatterplot
-  svg.selectAll("dot")
-  .data(data)
-  .enter().append("circle")
-  .attr("r", 3.5)
-  .attr("cx", function(d) { return x(d.x); })
-  .attr("cy", function(d) { return y(d.y); });
-
-  // Add the X Axis
-  svg.append("g")
-    .attr("class", "x axis")
-    .attr("transform", "translate(0," + height + ")")
+  main.append('g')
+    .attr('transform', 'translate(0,' + height + ')')
+    .attr('class', 'main axis date')
     .call(xAxis);
 
-  // Add the Y Axis
-  svg.append("g")
-    .attr("class", "y axis")
+  // draw the y axis
+  var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient('left');
+
+  main.append('g')
+    .attr('transform', 'translate(0,0)')
+    .attr('class', 'main axis date')
     .call(yAxis);
 
+  var g = main.append("svg:g"); 
+
+  g.selectAll("scatter-dots")
+    .data(data)
+    .enter().append("svg:circle")
+    .attr("cx", function (d,i) { return x(d.x); } )
+    .attr("cy", function (d) { return y(d.x); } )
+    .attr("r", 8);
+
+
+//  // Define the axes
+//  var xAxis = d3.svg.axis().scale(x)
+//    .orient("bottom").ticks(5);
+//
+//  var yAxis = d3.svg.axis().scale(y)
+//    .orient("left").ticks(5);
+//
+//  // Define the line
+//  var valueline = d3.svg.line()
+//    .x(function(d) { return x(d.x); })
+//    .y(function(d) { return y(d.y); });
+//
+//  // Scale the range of the data
+//  x.domain(d3.extent(data, function(d) { return d.x; }));
+//  y.domain([0, d3.max(data, function(d) { return d.y; })]);
+//
+//  // Add the scatterplot
+//  svg.selectAll("dot")
+//  .data(data)
+//  .enter().append("circle")
+//  .attr("r", 3.5)
+//  .attr("cx", function(d) { return x(d.x); })
+//  .attr("cy", function(d) { return y(d.y); });
 }
 
 class AppComponent extends React.Component {
@@ -101,19 +128,24 @@ class AppComponent extends React.Component {
 }
 
 const App = createContainer(() => {
-  tiles =  Tiles.find({}, {limit: 10}).fetch();
+  zpts =  ZPT.find({}, {limit: 10}).fetch();
+  //one = ZPT.findOne({}).fetch();
+  //for (var i = 0; i < zpts.length; i++) {
+  //  console.log('i=',i);
+  //  console.log('zpts[i]=',zpts[i]['nmatch']);
+  //}
 
   var x = [];
   var y = [];
-
-  for (var i = 0; i < tiles.length; i++) {
-    x.push(tiles[i].RA);
-    y.push(tiles[i].DEC);
+  //console.log('lenght',zpts.length)
+  for (var i = 0; i < zpts.length; i++) {
+    x.push(zpts[i]["mjd_obs"]);
+    y.push(zpts[i]["nmatch"]);
   }
-
+  console.log('mjd_obs:',x)
   return {
     data: {x: x,  y: y},
-    tiles: tiles,
+    zpts: zpts,
   };
 }, AppComponent);
 
