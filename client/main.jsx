@@ -10,89 +10,77 @@ function D3(data) {
   console.log('x=',data.x);
   console.log('y=',data.y);
 
-  var test_data = [[5,3], [10,17], [15,4], [2,8]];
-  console.log('test_data[0]',test_data[0]);
-  console.log('test_data[1]',test_data[1]);
-  var xdom= [0, d3.max(test_data, function(d) { return d[0]; })]
-  console.log('xdom',xdom);
+  //var test_data = [[5,3], [10,17], [15,4], [2,8]];
+  //console.log('test_data[0]',test_data[0]);
+  //console.log('test_data[1]',test_data[1]);
+  //var xdom= [0, d3.max(test_data, function(d) { return d[0]; })]
+  //console.log('xdom',xdom);
 
   var margin = {top: 20, right: 15, bottom: 60, left: 60}
-    , width = 960 - margin.left - margin.right
-    , height = 500 - margin.top - margin.bottom;
+  var width = 300 - margin.left - margin.right
+  var height = 300 - margin.top - margin.bottom;
+  //console.log('margin',margin)
+  var svgContainer = d3.select('#page-1')
+                       .append('svg')
+                       .attr('width', width + margin.right + margin.left)
+                       .attr('height', height + margin.top + margin.bottom)
+                       .attr('class', 'chart')
+                       .style("border", "1px solid black");
 
-  var x = d3.scale.linear()
-    .domain([0, d3.max(data, function(d) { return d.x; })])
-    .range([ 0, width ]);
-
-  var y = d3.scale.linear()
-    .domain([0, d3.max(data, function(d) { return d.y; })])
-    .range([ height, 0 ]);
-
-  var chart = d3.select('#page-1')
-    .append('svg:svg')
-    .attr('width', width + margin.right + margin.left)
-    .attr('height', height + margin.top + margin.bottom)
-    .attr('class', 'chart')
-
-  var main = chart.append('g')
-    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-    .attr('width', width)
-    .attr('height', height)
-    .attr('class', 'main')   
+  var mainGroup = svgContainer.append('g')
+                              .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+                              .attr('width', width)
+                              .attr('height', height)
+                              .attr('class', 'main')   
   
+  var xScale = d3.scale.linear()
+                 .domain([0, d3.max(data.x)])
+                 .range([ 0, width ]);
+
+  var yScale = d3.scale.linear()
+                 .domain([0, d3.max(data.y)])
+                 .range([ height, 0 ]);
+
   // draw the x axis
   var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient('bottom');
-
-  main.append('g')
-    .attr('transform', 'translate(0,' + height + ')')
-    .attr('class', 'main axis date')
-    .call(xAxis);
+                .scale(xScale)
+                .orient('bottom');
 
   // draw the y axis
   var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient('left');
-
-  main.append('g')
-    .attr('transform', 'translate(0,0)')
-    .attr('class', 'main axis date')
-    .call(yAxis);
-
-  var g = main.append("svg:g"); 
-
-  g.selectAll("scatter-dots")
-    .data(data)
-    .enter().append("svg:circle")
-    .attr("cx", function (d,i) { return x(d.x); } )
-    .attr("cy", function (d) { return y(d.x); } )
-    .attr("r", 8);
+                .scale(yScale)
+                .orient('left');
 
 
-//  // Define the axes
-//  var xAxis = d3.svg.axis().scale(x)
-//    .orient("bottom").ticks(5);
-//
-//  var yAxis = d3.svg.axis().scale(y)
-//    .orient("left").ticks(5);
-//
-//  // Define the line
-//  var valueline = d3.svg.line()
-//    .x(function(d) { return x(d.x); })
-//    .y(function(d) { return y(d.y); });
-//
-//  // Scale the range of the data
-//  x.domain(d3.extent(data, function(d) { return d.x; }));
-//  y.domain([0, d3.max(data, function(d) { return d.y; })]);
-//
-//  // Add the scatterplot
-//  svg.selectAll("dot")
-//  .data(data)
-//  .enter().append("circle")
-//  .attr("r", 3.5)
-//  .attr("cx", function(d) { return x(d.x); })
-//  .attr("cy", function(d) { return y(d.y); });
+  var xAxisGroup = svgContainer.append('g')
+                               .attr('transform', 'translate(0,' + height + ')')
+                               .attr('class', 'main axis date')
+                               .call(xAxis);
+
+  var yAxisGroup = svgContainer.append('g')
+                               .attr('transform', 'translate(0,0)')
+                               .attr('class', 'main axis date')
+                               .call(yAxis);
+
+  var circleGroup = svgContainer.append("g"); 
+
+  var xvals= []
+  console.log('data',data);
+  for (i=0; i< data.x.length; i++) {
+    xvals.push(xScale(data.x[i]));
+  }
+  console.log('xvals=',xvals);
+
+  var circles = circleGroup.selectAll("circle")
+                           .data(data)
+                           .enter()
+                           .append("circle")
+
+  var circleAttrib = circles
+                     .attr("cx", function (d) { return xScale(d.x); } )
+                     .attr("cy", function (d) { return yScale(d.y); } )
+                     .attr("r", 5000)
+                     .style("fill","blue");
 }
 
 class AppComponent extends React.Component {
@@ -137,7 +125,7 @@ const App = createContainer(() => {
 
   var x = [];
   var y = [];
-  //console.log('lenght',zpts.length)
+  console.log('zpts',zpts)
   for (var i = 0; i < zpts.length; i++) {
     x.push(zpts[i]["mjd_obs"]);
     y.push(zpts[i]["nmatch"]);
