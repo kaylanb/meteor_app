@@ -44,3 +44,16 @@ div.page {
   border-radius: 5px;
   box-shadow: 0 0 10px #666;
 }
+
+
+
+
+.line {
+    fill: none;
+    stroke: #7dc7f4;
+    stroke-width: 5px;
+}
+
+
+
+
