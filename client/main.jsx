@@ -6,85 +6,44 @@ import { FlowRouter } from 'meteor/kadira:flow-router';
 import { Tiles } from '../imports/db.js';
 import { ZPT } from '../imports/db.js';
 
-class BasicPlot extends React.Component {
+class BasicSvg extends React.Component {
+
   render() {
-    console.log('x=',this.props.x);
-    console.log('y=',this.props.y);
-
-    //var test_data = [[5,3], [10,17], [15,4], [2,8]];
-    //console.log('test_data[0]',test_data[0]);
-    //console.log('test_data[1]',test_data[1]);
-    //var xdom= [0, d3.max(test_data, function(d) { return d[0]; })]
-    //console.log('xdom',xdom);
-
-    var margin = {top: 20, right: 15, bottom: 60, left: 60}
-    var width = 300 - margin.left - margin.right
-    var height = 300 - margin.top - margin.bottom;
-    //console.log('margin',margin)
-    var svgContainer = d3.select('#page-' + this.props.page)
-                         .append('svg')
-                         .attr('width', width + margin.right + margin.left)
-                         .attr('height', height + margin.top + margin.bottom)
-                         .attr('class', 'chart')
-                         .style("border", "1px solid black");
-
-    var mainGroup = svgContainer.append('g')
-                                .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-                                .attr('width', width)
-                                .attr('height', height)
-                                .attr('class', 'main')   
-    
-    var xScale = d3.scale.linear()
-                   .domain([0, d3.max(this.props.x)])
-                   .range([ 0, width ]);
-
-    var yScale = d3.scale.linear()
-                   .domain([0, d3.max(this.props.y)])
-                   .range([ height, 0 ]);
-
-    // draw the x axis
-    var xAxis = d3.svg.axis()
-                  .scale(xScale)
-                  .orient('bottom');
-
-    // draw the y axis
-    var yAxis = d3.svg.axis()
-                  .scale(yScale)
-                  .orient('left');
-
-
-    var xAxisGroup = svgContainer.append('g')
-                                 .attr('transform', 'translate(0,' + height + ')')
-                                 .attr('class', 'main axis date')
-                                 .call(xAxis);
-
-    var yAxisGroup = svgContainer.append('g')
-                                 .attr('transform', 'translate(0,0)')
-                                 .attr('class', 'main axis date')
-                                 .call(yAxis);
-
-    var circleGroup = svgContainer.append("g"); 
-
-    var circleData= [{"cx": this.props.x,
-                      "cy": this.props.y}
-                    ];
-    console.log('circleData=',circleData)
-    //var circles = circleGroup.selectAll("circle")
-    //                         .data(circleData)
-    //                         .enter()
-    //                         .append("circle")
-
-    //var circleAttrib = circles
-    //                   .attr("cx", function (d) { return xScale(d.x); } )
-    //                   .attr("cy", function (d) { return yScale(d.y); } )
-    //                   .attr("r", )
-    //                   .style("fill","blue");
-    // any html?
     return (
-      null
+      <svg width={this.props.width} height={this.props.width}>
+        <circle cx={this.props.cx} cy="20" r="20" fill="green" />
+        <rect x="110" y="110" height="30" width="30" fill="blue" />
+        <circle cx="70" cy="70" r="20" fill="purple" />
+        <rect x="160" y="160" height="30" width="30" fill="red" />
+      </svg>
     );
   }
 }
+
+class Pages extends React.Component {
+  getPlotSvg() {
+    if (this.props.page == 1) {
+      var cx = 100;
+    } else if (this.props.page == 2) {
+      var cx = 200;
+    } else {
+      var cx = 300;
+    }
+    return ( <BasicSvg width="400" height="400" cx={cx} />  );
+  }
+
+  render() {
+    var page_id = "page-" + this.props.page;
+    
+    return (
+      <div className="page" id={page_id}>page {this.props.page}
+        {this.getPlotSvg()}
+      </div>
+   );
+  }
+}
+
+
 
 class AppComponent extends React.Component {
   constructor(props) {
@@ -93,22 +52,18 @@ class AppComponent extends React.Component {
       page: 1
     };
   }
-
+ 
   render() {
+    //var page_id = "page-" + this.state.page;
+
     return (
       <div>
         <div id="bar">
         <button onClick={() => this.setState({page: 1})}>1</button>
         <button onClick={() => this.setState({page: 2})}>2</button>
+        <button onClick={() => this.setState({page: 3})}>3</button>
         </div>
-        <div className="page" id="page-" + {this.state.page}>
-          page {this.state.page}
-       </div>
-       <BasicPlot
-        page={this.state.page}
-        x={this.props.data.x}
-        y={this.props.data.y}
-       />
+        <Pages page={this.state.page} />
       </div>
     );
   }
