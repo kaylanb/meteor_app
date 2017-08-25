@@ -21,6 +21,7 @@ class BasicSvg extends React.Component {
 }
 
 class Pages extends React.Component {
+  // Returns the top level html to render each page
   getPlotSvg() {
     if (this.props.page == 1) {
       var cx = 100;
@@ -42,8 +43,6 @@ class Pages extends React.Component {
    );
   }
 }
-
-
 
 class AppComponent extends React.Component {
   constructor(props) {
