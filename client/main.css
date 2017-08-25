@@ -39,7 +39,7 @@ div.page {
   min-height: 500px;
   margin-left: auto;
   margin-right: auto;
-  background: #ddd;
+  background: #jjj;
   border: 1px solid #aaa;
   border-radius: 5px;
   box-shadow: 0 0 10px #666;
@@ -53,6 +53,29 @@ div.page {
     stroke: #7dc7f4;
     stroke-width: 5px;
 }
+
+.axis{
+    fill: black;
+    opacity: 1;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: none;
+    shape-rendering: crispEdges;
+
+}
+
+.axis text {
+    font-size: 14px;
+}
+
+.y-grid .tick{
+    stroke: gray;
+    opacity: 1;
+}
+
 
 
 
