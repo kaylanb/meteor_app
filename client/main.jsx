@@ -10,13 +10,6 @@ import LineChart from '../imports/LineChart.jsx';
 
 
 class Visitors extends React.Component {
-    object_to_array(obj) {
-      var arr = $.map(obj, function(value, index) {
-          return [value];
-        });
-      return (arr);
-    }
-
     render() {
         var data = [{day:'02-11-2016',count:180},
                   {day:'02-12-2016',count:250},
@@ -32,22 +25,11 @@ class Visitors extends React.Component {
          d.date = parseDate(d.day);
         });
 
-        var x=[];
-        var y=[];
-        for (i=0; i < data.length; i++) {
-          x.push( data[i].date );
-          y.push( data[i].count );
-        }
-
-        // var dataXY = {x: this.object_to_array(x), 
-                      // y: this.object_to_array(y)};
-        // var dataXY = {x: x, 
-                      // y: y};
+        // data needs to be [{x:val,y:val},{x:val2,y:val2}]
         var dataXY = [];
         for (var i=0; i < data.length; i++) {
           dataXY.push( {x:data[i].date, y:data[i].count} );
         }
-        
         console.log('dataXY=',dataXY);
 
         return (
@@ -60,11 +42,6 @@ class Visitors extends React.Component {
         )
     }
 };
-
-// ReactDOM.render(
-//   <Visitors/>,
-//   document.getElementById("top-line-chart")
-// );
 
 
 class BasicSvg extends React.Component {
@@ -84,14 +61,20 @@ class BasicSvg extends React.Component {
 class PlotZpts extends React.Component {
     render() {
         var zpts =  ZPT.find({}, {limit: 10}).fetch();
+        console.log('zpts=',zpts);
+
+        // data needs to be [{x:val,y:val},{x:val2,y:val2}]
+        var data = [];
+        for (var i=0; i < zpts.length; i++) {
+          data.push( {x:zpts[i].zpt, y:zpts[i].nmatch} );
+        }
+        console.log('data=',data);
 
         return (
             <div>
                 <h3>Zeropoint Data</h3>
                 <div className="bottom-right-svg">
-                    <LineChart
-                      data={zpts} 
-                      chartId='v1_chart'/>
+                    <LineChart data={data} chartId='v1_chart'/>
                 </div>
             </div>
         )
@@ -102,7 +85,7 @@ class Pages extends React.Component {
   // Returns the top level html to render each page
   getPlotSvg() {
     if (this.props.page == 1) {
-      var html = <Visitors />;
+      var html = <PlotZpts />;
     } else if (this.props.page == 2) {
       var html = <Visitors />;
     } else {
@@ -133,6 +116,9 @@ class AppComponent extends React.Component {
  
   render() {
     //var page_id = "page-" + this.state.page;
+    zpts =  ZPT.find({}, {limit: 10}).fetch();
+    console.log('AppComponent: zpts=',zpts);
+    console.log('AppComponent: this.props=',this.props);
 
     return (
       <div>
@@ -147,33 +133,34 @@ class AppComponent extends React.Component {
   }
 }
 
-// const App = createContainer(() => {
-//   zpts =  ZPT.find({}, {limit: 10}).fetch();
-//   //one = ZPT.findOne({}).fetch();
-//   //for (var i = 0; i < zpts.length; i++) {
-//   //  console.log('i=',i);
-//   //  console.log('zpts[i]=',zpts[i]['nmatch']);
-//   //}
+const App = createContainer(() => {
+  zpts =  ZPT.find({}, {limit: 10}).fetch();
+  console.log('App: zpts=',zpts);
+  //one = ZPT.findOne({}).fetch();
+  //for (var i = 0; i < zpts.length; i++) {
+  //  console.log('i=',i);
+  //  console.log('zpts[i]=',zpts[i]['nmatch']);
+  //}
 
-//   var x = [];
-//   var y = [];
-//   console.log('zpts',zpts)
-//   for (var i = 0; i < zpts.length; i++) {
-//     x.push(zpts[i]["mjd_obs"]);
-//     y.push(zpts[i]["nmatch"]);
-//   }
-//   console.log('mjd_obs:',x)
-//   return {
-//     data: {x: x,  y: y},
-//     zpts: zpts,
-//   };
-// }, AppComponent);
+  // var x = [];
+  // var y = [];
+  // console.log('zpts',zpts)
+  // for (var i = 0; i < zpts.length; i++) {
+  //   x.push(zpts[i]["mjd_obs"]);
+  //   y.push(zpts[i]["nmatch"]);
+  // }
+  // console.log('mjd_obs:',x)
+  return {
+    // data: {x: x,  y: y},
+    zpts: zpts,
+  };
+}, AppComponent);
 
  
 FlowRouter.route("/", {
   name: "main",
   action: function() {
-    //mount(App);
-    mount(AppComponent);
+    mount(App);
+    // mount(AppComponent);
   },
 });
