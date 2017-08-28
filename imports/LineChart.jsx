@@ -1,106 +1,91 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+// import sizeMe from 'react-sizeme';
 
 class LineChart extends React.Component {
-    constructor(props) {
-      super(props);
-      this.state = {
-        width: this.props.width
-      };
-    }
+  render() {
+      //const { width } = this.props.size;
+      const width = 600;
+      const height = 300;
 
-    render() {
-        var data=[
-            {day:'02-11-2016',count:180},
-            {day:'02-12-2016',count:250},
-            {day:'02-13-2016',count:150},
-            {day:'02-14-2016',count:496},
-            {day:'02-15-2016',count:140},
-            {day:'02-16-2016',count:380},
-            {day:'02-17-2016',count:100},
-            {day:'02-18-2016',count:150}
-        ];
+      var margin = {top: 5, right: 50, bottom: 20, left: 50},
+          w = width - (margin.left + margin.right),
+          h = height - (margin.top + margin.bottom);
 
-        var margin = {top: 5, right: 50, bottom: 20, left: 50},
-            w = this.state.width - (margin.left + margin.right),
-            h = this.props.height - (margin.top + margin.bottom);
+      var transform='translate(' + margin.left + ',' + margin.top + ')';
 
-        var transform='translate(' + margin.left + ',' + margin.top + ')';
+      var xScale = d3.time.scale()
+          .domain(d3.extent(this.props.data, function (d) {
+              return d.x;
+          }))
+          .rangeRound([0, w]);
 
-        var parseDate = d3.time.format("%m-%d-%Y").parse;
+      var yScale = d3.scale.linear()
+          .domain([0,d3.max(this.props.data,function(d){
+              return d.y+100;
+          })])
+          .range([h, 0]);
+      
+      var line = d3.svg.line()
+          .x(function (d) {
+              return xScale(d.x);
+          })
+          .y(function (d) {
+              return yScale(d.y);
+          }).interpolate('cardinal');
 
-        data.forEach(function (d) {
-            d.date = parseDate(d.day);
-        });
+      var yAxis = d3.svg.axis()
+          .scale(yScale)
+          .orient('left')
+          .ticks(5);
 
-        var xScale = d3.time.scale()
-            .domain(d3.extent(data, function (d) {
-                return d.date;
-            }))
-            .rangeRound([0, w]);
+      var xAxis = d3.svg.axis()
+         .scale(xScale)
+         .orient('bottom')
+         .tickValues(this.props.data.map(function(d,i){
+             if(i>0)
+                 return d.x;
+         }).splice(1))
+         .ticks(4);
+       
+      var yGrid = d3.svg.axis()
+         .scale(yScale)
+         .orient('left')
+         .ticks(5)
+         .tickSize(-w, 0, 0)
+         .tickFormat("");
 
-        var yScale = d3.scale.linear()
-            .domain([0,d3.max(data,function(d){
-                return d.count+100;
-            })])
-            .range([h, 0]);
-        
-        var line = d3.svg.line()
-            .x(function (d) {
-                return xScale(d.date);
-            })
-            .y(function (d) {
-                return yScale(d.count);
-            }).interpolate('cardinal');
+      return (
+          <div>
+              <svg id={this.props.chartId} width={width} height={height}>
 
-        var yAxis = d3.svg.axis()
-            .scale(yScale)
-            .orient('left')
-            .ticks(5);
- 
-        var xAxis = d3.svg.axis()
-           .scale(xScale)
-           .orient('bottom')
-           .tickValues(data.map(function(d,i){
-               if(i>0)
-                   return d.date;
-           }).splice(1))
-           .ticks(4);
-         
-        var yGrid = d3.svg.axis()
-           .scale(yScale)
-           .orient('left')
-           .ticks(5)
-           .tickSize(-w, 0, 0)
-           .tickFormat("");
-
-        return (
-            <div>
-                <svg id={this.props.chartId} width={this.state.width} height={this.props.height}>
-
-                    <g transform={transform}>
-                        <path className="line shadow" d={line(data)} strokeLinecap="round"/>
-                        <Dots data={data} xScale={xScale} yScale={yScale}/>
-                        <Grid h={h} grid={yGrid} gridType="y"/>
-                        <Axis h={h} axis={yAxis} axisType="y" />
-                        <Axis h={h} axis={xAxis} axisType="x"/>
-                    </g>
-                </svg>
-            </div>
-        );
-    }
+                  <g transform={transform}>
+                      <path className="line shadow" 
+                            d={line(this.props.data)} strokeLinecap="round"/>
+                      <Dots data={this.props.data} 
+                            xScale={xScale} yScale={yScale}/>
+                      <Grid h={h} grid={yGrid} gridType="y"/>
+                      <Axis h={h} axis={yAxis} axisType="y" />
+                      <Axis h={h} axis={xAxis} axisType="x"/>
+                  </g>
+              </svg>
+          </div>
+      );
+  }
 };
 LineChart.propTypes = {
-  width:React.PropTypes.number,
-  height:React.PropTypes.number,
-  chartId:React.PropTypes.string
+  size: React.PropTypes.shape({
+    width: React.PropTypes.number,
+  }),
+  chartId: React.PropTypes.string,
+  data:React.PropTypes.array,
 };
 
-LineChart.defaultProps = {
-  width: 400,
-  height: 300,
-  chartId: 'v1_chart'
-};
+// LineChart.defaultProps = {
+//   width: 600,
+//   height: 300,
+//   chartId: 'v1_chart',
+// };
 
 class Dots extends React.Component {
     
@@ -108,16 +93,13 @@ class Dots extends React.Component {
         // scope
         var _self=this;
  
-        //remove last & first point
-        var data=this.props.data.splice(1);
-        data.pop();
- 
-        var circles=data.map(function(d,i){
- 
+        console.log("_self=",_self);
+        var circles= $.map(_self.props.data,function(d,i) {
+            console.log('data: d=',d);
             return (<circle className="dot" 
                       r="7" 
-                      cx={_self.props.xScale(d.date)} 
-                      cy={_self.props.yScale(d.count)} 
+                      cx={_self.props.xScale(d.x)} 
+                      cy={_self.props.yScale(d.y)} 
                       fill="#7dc7f4"
                       stroke="#3f5175" 
                       strokeWidth="5px" 
@@ -189,4 +171,5 @@ Grid.propTypes = {
   gridType:React.PropTypes.oneOf(['x','y'])
 };
 
-export default LineChart;
+// export default sizeMe()(LineChart)
+export default LineChart

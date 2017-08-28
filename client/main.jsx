@@ -10,12 +10,51 @@ import LineChart from '../imports/LineChart.jsx';
 
 
 class Visitors extends React.Component {
+    object_to_array(obj) {
+      var arr = $.map(obj, function(value, index) {
+          return [value];
+        });
+      return (arr);
+    }
+
     render() {
+        var data = [{day:'02-11-2016',count:180},
+                  {day:'02-12-2016',count:250},
+                  {day:'02-13-2016',count:150},
+                  {day:'02-14-2016',count:496},
+                  {day:'02-15-2016',count:140},
+                  {day:'02-16-2016',count:380},
+                  {day:'02-17-2016',count:100},
+                  {day:'02-18-2016',count:150}
+                  ];
+        var parseDate = d3.time.format("%m-%d-%Y").parse;
+        data.forEach(function (d) {
+         d.date = parseDate(d.day);
+        });
+
+        var x=[];
+        var y=[];
+        for (i=0; i < data.length; i++) {
+          x.push( data[i].date );
+          y.push( data[i].count );
+        }
+
+        // var dataXY = {x: this.object_to_array(x), 
+                      // y: this.object_to_array(y)};
+        // var dataXY = {x: x, 
+                      // y: y};
+        var dataXY = [];
+        for (var i=0; i < data.length; i++) {
+          dataXY.push( {x:data[i].date, y:data[i].count} );
+        }
+        
+        console.log('dataXY=',dataXY);
+
         return (
             <div>
                 <h3>Visitors to your site</h3>
                 <div className="bottom-right-svg">
-                    <LineChart/>
+                    <LineChart data={dataXY} chartId='v1_chart'/>
                 </div>
             </div>
         )
@@ -42,14 +81,30 @@ class BasicSvg extends React.Component {
   }
 }
 
+class PlotZpts extends React.Component {
+    render() {
+        var zpts =  ZPT.find({}, {limit: 10}).fetch();
+
+        return (
+            <div>
+                <h3>Zeropoint Data</h3>
+                <div className="bottom-right-svg">
+                    <LineChart
+                      data={zpts} 
+                      chartId='v1_chart'/>
+                </div>
+            </div>
+        )
+    }
+};
+
 class Pages extends React.Component {
   // Returns the top level html to render each page
   getPlotSvg() {
     if (this.props.page == 1) {
       var html = <Visitors />;
     } else if (this.props.page == 2) {
-      var cx = 200;
-      var html = <BasicSvg width="400" height="400" cx={cx} />;
+      var html = <Visitors />;
     } else {
       var cx = 300;
       var html = <BasicSvg width="400" height="400" cx={cx} />;
@@ -92,32 +147,33 @@ class AppComponent extends React.Component {
   }
 }
 
-const App = createContainer(() => {
-  zpts =  ZPT.find({}, {limit: 10}).fetch();
-  //one = ZPT.findOne({}).fetch();
-  //for (var i = 0; i < zpts.length; i++) {
-  //  console.log('i=',i);
-  //  console.log('zpts[i]=',zpts[i]['nmatch']);
-  //}
+// const App = createContainer(() => {
+//   zpts =  ZPT.find({}, {limit: 10}).fetch();
+//   //one = ZPT.findOne({}).fetch();
+//   //for (var i = 0; i < zpts.length; i++) {
+//   //  console.log('i=',i);
+//   //  console.log('zpts[i]=',zpts[i]['nmatch']);
+//   //}
 
-  var x = [];
-  var y = [];
-  console.log('zpts',zpts)
-  for (var i = 0; i < zpts.length; i++) {
-    x.push(zpts[i]["mjd_obs"]);
-    y.push(zpts[i]["nmatch"]);
-  }
-  console.log('mjd_obs:',x)
-  return {
-    data: {x: x,  y: y},
-    zpts: zpts,
-  };
-}, AppComponent);
+//   var x = [];
+//   var y = [];
+//   console.log('zpts',zpts)
+//   for (var i = 0; i < zpts.length; i++) {
+//     x.push(zpts[i]["mjd_obs"]);
+//     y.push(zpts[i]["nmatch"]);
+//   }
+//   console.log('mjd_obs:',x)
+//   return {
+//     data: {x: x,  y: y},
+//     zpts: zpts,
+//   };
+// }, AppComponent);
 
  
 FlowRouter.route("/", {
   name: "main",
   action: function() {
-    mount(App);
+    //mount(App);
+    mount(AppComponent);
   },
 });
