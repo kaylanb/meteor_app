@@ -115,11 +115,6 @@ class AppComponent extends React.Component {
   }
  
   render() {
-    //var page_id = "page-" + this.state.page;
-    zpts =  ZPT.find({}, {limit: 10}).fetch();
-    console.log('AppComponent: zpts=',zpts);
-    console.log('AppComponent: this.props=',this.props);
-
     return (
       <div>
         <div id="bar">
@@ -134,7 +129,8 @@ class AppComponent extends React.Component {
 }
 
 const App = createContainer(() => {
-  zpts =  ZPT.find({}, {limit: 10}).fetch();
+  Meteor.subscribe("zpt", 25);
+  zpts =  ZPT.find({}).fetch();
   console.log('App: zpts=',zpts);
   //one = ZPT.findOne({}).fetch();
   //for (var i = 0; i < zpts.length; i++) {
@@ -156,11 +152,9 @@ const App = createContainer(() => {
   };
 }, AppComponent);
 
- 
 FlowRouter.route("/", {
-  name: "main",
-  action: function() {
-    mount(App);
-    // mount(AppComponent);
-  },
+ name: "main",
+ action: function() {
+   mount(App);
+ },
 });
