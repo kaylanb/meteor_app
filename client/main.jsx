@@ -4,9 +4,13 @@ import { createContainer } from 'meteor/react-meteor-data';
 import { mount } from 'react-mounter';
 import { Meteor } from 'meteor/meteor';
 import { FlowRouter } from 'meteor/kadira:flow-router';
-import { Tiles } from '../imports/db.js';
+//import { Tiles } from '../imports/db.js';
 import { ZPT } from '../imports/db.js';
 import LineChart from '../imports/LineChart.jsx';
+
+import Plot from '../imports/Plot.js';
+
+import createPlotlyComponent from 'react-plotly.js/factory';
 
 
 class Visitors extends React.Component {
@@ -60,7 +64,7 @@ class BasicSvg extends React.Component {
 
 class PlotZpts extends React.Component {
     render() {
-        var zpts =  ZPT.find({}, {limit: 10}).fetch();
+        var zpts =  ZPT.find({}, {limit: 25}).fetch();
         console.log('zpts=',zpts);
 
         // data needs to be [{x:val,y:val},{x:val2,y:val2}]
@@ -81,14 +85,52 @@ class PlotZpts extends React.Component {
     }
 };
 
+class ShowData extends React.Component {
+  //https://academy.plot.ly/react/3-with-plotly/
+  // constructor() {
+  //   super();
+
+  //   var x = []; //[1,2,3,4];
+  //   var y = []; //[1,4,9,16];
+  //   for (var i = 0; i < 5; i++) {
+  //     console.log('i=',i,'x=',x);
+  //     x.push(i); //zpts[i]['zpt']);
+  //     y.push(i*i) //zpts[i]['nmatch']);
+  //   }
+  //   var self = this
+  //   self.state = {
+  //     x: x,
+  //     y: y
+  //   };
+
+  //   console.log('x=',this.state.x)
+  // }
+  //var zpts =  ZPT.find({}).fetch();
+  state = {
+    x: [1,2,3,4],
+    y: [1,4,9,16]
+  };
+  render() {
+    return (
+      <div>
+        <h1>My Plot</h1>
+          <Plot x={this.state.x} y={this.state.y} type="scatter"/>
+      </div>
+    );
+  }
+}
+
+
+
 class Pages extends React.Component {
   // Returns the top level html to render each page
   getPlotSvg() {
     if (this.props.page == 1) {
-      var html = <PlotZpts />;
+      //var html = <PlotZpts />;
+      var html = <ShowData/>;
     } else if (this.props.page == 2) {
       var html = <Visitors />;
-    } else {
+    } else if (this.props.page == 3) {
       var cx = 300;
       var html = <BasicSvg width="400" height="400" cx={cx} />;
     }
@@ -130,13 +172,13 @@ class AppComponent extends React.Component {
 
 const App = createContainer(() => {
   Meteor.subscribe("zpt", 25);
+  console.log('HERE I AM')
   zpts =  ZPT.find({}).fetch();
   console.log('App: zpts=',zpts);
   //one = ZPT.findOne({}).fetch();
-  //for (var i = 0; i < zpts.length; i++) {
-  //  console.log('i=',i);
-  //  console.log('zpts[i]=',zpts[i]['nmatch']);
-  //}
+  for (var i = 0; i < zpts.length; i++) {
+   console.log('zpts[',i,']=',zpts[i]['nmatch']);
+  }
 
   // var x = [];
   // var y = [];
